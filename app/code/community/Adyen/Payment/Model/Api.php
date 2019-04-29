@@ -67,6 +67,360 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
 
 
     /**
+     * Create a payment request
+     *
+     * @param $payment
+     * @param $amount
+     * @param $paymentMethod
+     * @return mixed
+     */
+    public function authorisePayment($payment, $amount, $paymentMethod)
+    {
+        // retrieve configurations
+        if (Mage::app()->getStore()->isAdmin()) {
+            $storeId = $payment->getOrder()->getStoreId();
+        } else {
+            $storeId = null;
+        }
+
+        // configurations
+        $order = $payment->getOrder();
+        $orderCurrencyCode = $order->getOrderCurrencyCode();
+        $incrementId = $order->getIncrementId();
+        $realOrderId = $order->getRealOrderId();
+        $customerId = Mage::helper('adyen/payment')->getShopperReference($order->getCustomerId(), $realOrderId);
+        $merchantAccount = Mage::helper('adyen')->getAdyenMerchantAccount($this->_paymentMethod, $storeId);
+        $customerEmail = $order->getCustomerEmail();
+        $billingAddress = $order->getBillingAddress();
+        $deliveryAddress = $order->getShippingAddress();
+
+        if ($this->_helper()->getConfigDataDemoMode()) {
+            $requestUrl = "https://checkout-test.adyen.com/v41/payments";
+        } else {
+            $requestUrl = self::ENDPOINT_PROTOCOL .
+                $this->_helper()->getConfigData("live_endpoint_url_prefix") .
+                self::CHECKOUT_ENDPOINT_LIVE_SUFFIX . "/v42/payments";
+        }
+
+        $apiKey = $this->_helper()->getConfigDataApiKey($storeId);
+
+        $request = array();
+
+        $request['browserInfo'] = array(
+            'userAgent' => $_SERVER['HTTP_USER_AGENT'],
+            'acceptHeader' => $_SERVER['HTTP_ACCEPT']
+        );
+        $request['merchantAccount'] = $merchantAccount;
+        $request['returnUrl'] = Mage::getUrl('adyen/process/success');
+        $request['amount'] = array(
+            'currency' => $orderCurrencyCode,
+            'value' => Mage::helper('adyen')->formatAmount($amount, $orderCurrencyCode)
+        );
+        $request['reference'] = $incrementId;
+        $request['fraudOffset'] = '0';
+        $request['shopperEmail'] = $customerEmail;
+        $request['shopperIP'] = $order->getRemoteIp();
+        $request['shopperReference'] = !empty($customerId) ? $customerId : self::GUEST_ID . $realOrderId;
+
+
+        $request = $this->buildAddressData($request, $billingAddress, $deliveryAddress);
+        $request = $this->setRecurringMode($request, $paymentMethod, $payment, $storeId);
+        $request = $this->setShopperInteraction($request, $paymentMethod, $payment, $storeId);
+        $request = $this->setPaymentSpecificData($request, $paymentMethod, $payment);
+        $response = $this->doRequestJson($request, $requestUrl, $apiKey, $storeId);
+        return json_decode($response, true);
+    }
+
+    /**
+     * Define recurring mode for payment request
+     *
+     * @param $request
+     * @param $paymentMethod
+     * @param $storeId
+     * @param $payment
+     * @return mixed
+     */
+    public function setRecurringMode($request, $paymentMethod, $payment, $storeId)
+    {
+        $recurringType = $this->_helper()->getConfigData('recurringtypes', 'adyen_abstract', $storeId);
+
+        if ($paymentMethod === 'apple_pay') {
+            $request['enableRecurring'] = false;
+            $request['enableOneClick'] = false;
+            // if type want to store it as recurring do store it only as recurring
+            // you do not want to have a oneclick card based on apple pay tx
+            if (!empty($recurringType) && $recurringType !== self::RECURRING_TYPE_ONECLICK) {
+                $request['enableRecurring'] = true;
+            }
+        } elseif ($paymentMethod === 'cc') {
+            $request['enableRecurring'] = false;
+            $request['enableOneClick'] = true;
+
+            // if save card is disabled only shoot in as recurring if recurringType is set to ONECLICK,RECURRING
+            if ($payment->getAdditionalInformation("store_cc") == "" &&
+                $recurringType === "ONECLICK,RECURRING"
+            ) {
+                $request['enableRecurring'] = true;
+            } elseif ($payment->getAdditionalInformation("store_cc") == "1") {
+                if ($recurringType == "ONECLICK" || $recurringType == "ONECLICK,RECURRING") {
+                    $request['paymentMethod']['storeDetails'] = true;
+                }
+
+                if ($recurringType == "ONECLICK,RECURRING" || $recurringType == "RECURRING") {
+                    $request['enableRecurring'] = true;
+                }
+            } elseif ($recurringType == "RECURRING") {
+                $request['enableRecurring'] = true;
+            }
+        }
+
+        return $request;
+    }
+
+
+    public function setShopperInteraction($request, $paymentMethod, $payment, $storeId)
+    {
+        $shopperInteraction = "Ecommerce";
+        $enableMoto = (int)$this->_helper()->getConfigData('enable_moto', 'adyen_cc', $storeId);
+
+        if ($paymentMethod == 'cc') {
+            if ($paymentMethod == 'cc' && Mage::app()->getStore()->isAdmin() &&
+                $enableMoto != null && $enableMoto == 1
+            ) {
+                $shopperInteraction = 'Moto';
+            }
+        } elseif ($paymentMethod === 'oneclick') {
+            if (!$payment->getAdditionalInformation('customer_interaction')) {
+                $shopperInteraction = "ContAuth";
+            }
+        }
+
+        $request['shopperInteraction'] = $shopperInteraction;
+        return $request;
+    }
+
+    /**
+     * Set payment specific data into payment request
+     *
+     * @param $request
+     * @param $paymentMethod
+     * @param $payment
+     * @return mixed
+     */
+    public function setPaymentSpecificData($request, $paymentMethod, $payment)
+    {
+        if ($paymentMethod == 'cc' || $paymentMethod == 'oneclick') {
+            // encrypted card data
+            $session = Mage::helper('adyen')->getSession();
+            $info = $payment->getMethodInstance();
+            $encryptedNumber = $session->getData('encrypted_number_' . $info->getCode());
+            $encryptedExpiryMonth = $session->getData('encrypted_expiry_month_' . $info->getCode());
+            $encryptedExpiryYear = $session->getData('encrypted_expiry_year_' . $info->getCode());
+            $encryptedCvc = $session->getData('encrypted_cvc_' . $info->getCode());
+
+
+            // installments
+            if (Mage::helper('adyen/installments')->isInstallmentsEnabled() &&
+                $payment->getAdditionalInformation('number_of_installments') > 0
+            ) {
+                $request['installments']['value'] = $payment->getAdditionalInformation('number_of_installments');
+            }
+
+
+            if (!empty($encryptedCvc) && $encryptedCvc != "false") {
+                $request['paymentMethod']['encryptedSecurityCode'] = $encryptedCvc;
+            }
+
+            if ($paymentMethod == 'oneclick') {
+                $request['paymentMethod']['type'] = $payment->getMethodInstance()->getRecurringDetails()['variant'];
+                $request['paymentMethod']['recurringDetailReference'] =
+                    $payment->getAdditionalInformation("recurring_detail_reference");
+            } else {
+                $request['paymentMethod']['type'] = 'scheme';
+                if (!empty($payment->getCcOwner())) {
+                    $request['paymentMethod']['holderName'] = $payment->getCcOwner();
+                }
+
+                if (!empty($encryptedNumber) && $encryptedNumber != "false") {
+                    $request['paymentMethod']['encryptedCardNumber'] = $encryptedNumber;
+                }
+
+                if (!empty($encryptedExpiryMonth) && !empty($encryptedExpiryYear != "")) {
+                    $request['paymentMethod']['encryptedExpiryMonth'] = $encryptedExpiryMonth;
+                    $request['paymentMethod']['encryptedExpiryYear'] = $encryptedExpiryYear;
+                }
+            }
+        } elseif ($paymentMethod === 'boleto') {
+            $boleto = unserialize($payment->getPoNumber());
+            $request['selectedBrand'] = $boleto['selected_brand'];
+            $request['paymentMethod']['type'] = $boleto['selected_brand'];
+            $request['socialSecurityNumber'] = $boleto['social_security_number'];
+            $request['deliveryDate'] = $boleto['delivery_date'];
+            $request['shopperName']['firstName'] = $boleto['firstname'];
+            $request['shopperName']['lastName'] = $boleto['lastname'];
+        } elseif ($paymentMethod === 'multibanco') {
+            $request['paymentMethod']['type'] = $paymentMethod;
+            $request['deliveryDate'] = $payment->getAdditionalInformation('delivery_date');
+        } elseif ($paymentMethod === 'sepa') {
+            $request['paymentMethod']['type'] = 'sepadirectdebit';
+            // Additional data for sepa direct debit
+            if (!empty($payment->getAdditionalInformation('account_name'))) {
+                $request['paymentMethod']['sepa.ownerName'] = $payment->getAdditionalInformation('account_name');
+            }
+
+            if (!empty($payment->getAdditionalInformation('iban'))) {
+                $request['paymentMethod']['sepa.ibanNumber'] = $payment->getAdditionalInformation('iban');
+            }
+        } elseif ($paymentMethod === 'apple_pay') {
+            $token = $payment->getAdditionalInformation("token");
+            if (!$token) {
+                Mage::throwException(Mage::helper('adyen')->__('Missing token'));
+            }
+
+            $request['paymentMethod']['applepay.token'] = base64_encode($token);
+        }
+
+        return $request;
+    }
+
+
+    /**
+     * Create a 3D secure payment request
+     *
+     * @param $payment
+     * @return mixed
+     */
+    public function authorise3DPayment($payment)
+    {
+        // retrieve configurations
+        if (Mage::app()->getStore()->isAdmin()) {
+            $storeId = $payment->getOrder()->getStoreId();
+        } else {
+            $storeId = null;
+        }
+
+        $apiKey = $this->_helper()->getConfigDataApiKey($storeId);
+        if ($this->_helper()->getConfigDataDemoMode()) {
+            $requestUrl = "https://checkout-test.adyen.com/v41/payments/details";
+        } else {
+            $requestUrl = self::ENDPOINT_PROTOCOL . $this->_helper()->getConfigData("live_endpoint_url_prefix") . self::CHECKOUT_ENDPOINT_LIVE_SUFFIX . "/v42/payments/details";
+        }
+
+
+        $paymentData = $payment->getAdditionalInformation('paymentData');
+        $md = $payment->getAdditionalInformation('md');
+        $paResponse = $payment->getAdditionalInformation('paResponse');
+
+
+        $request = array(
+            "paymentData" => $paymentData,
+            "details" => array(
+                "MD" => $md,
+                "PaRes" => $paResponse
+            )
+        );
+
+        $payment->unsAdditionalInformation('paymentData');
+        $payment->unsAdditionalInformation('paRequest');
+        $payment->unsAdditionalInformation('md');
+        $payment->unsAdditionalInformation('paResponse');
+
+
+        $resultJson = $this->doRequestJson($request, $requestUrl, $apiKey, $storeId);
+        return json_decode($resultJson, true);
+    }
+
+    /**
+     * @param array $request
+     * @param $billingAddress
+     * @param $shippingAddress
+     * @return array
+     */
+    public function buildAddressData($request, $billingAddress, $shippingAddress)
+    {
+        if ($billingAddress) {
+            // Billing address defaults
+            $requestBillingDefaults = array(
+                "street" => "N/A",
+                "postalCode" => '',
+                "city" => "N/A",
+                "houseNumberOrName" => '',
+                "country" => "ZZ"
+            );
+
+            // Save the defaults for later to compare if anything has changed
+            $requestBilling = $requestBillingDefaults;
+
+
+            if (!empty($billingAddress->getStreet(1))) {
+                $requestBilling["street"] = $shippingAddress->getStreet(1);
+            }
+
+            if (!empty($billingAddress->getPostcode())) {
+                $requestBilling["postalCode"] = $billingAddress->getPostcode();
+            }
+
+            if (!empty($billingAddress->getCity())) {
+                $requestBilling["city"] = $billingAddress->getCity();
+            }
+
+            if (!empty($billingAddress->getRegionCode())) {
+                $requestBilling["stateOrProvince"] = $billingAddress->getRegionCode();
+            }
+
+            if (!empty($billingAddress->getCountryId())) {
+                $requestBilling["country"] = $billingAddress->getCountryId();
+            }
+
+            // If nothing is changed which means delivery address is not filled
+            if ($requestBilling !== $requestBillingDefaults) {
+                $request['billingAddress'] = $requestBilling;
+            }
+        }
+
+        if ($shippingAddress) {
+            // Delivery address defaults
+            $requestDeliveryDefaults = array(
+                "street" => "N/A",
+                "postalCode" => '',
+                "city" => "N/A",
+                "houseNumberOrName" => '',
+                "country" => "ZZ"
+            );
+
+            // Save the defaults for later to compare if anything has changed
+            $requestDelivery = $requestDeliveryDefaults;
+
+
+            if (!empty($shippingAddress->getStreet(1))) {
+                $requestBilling["street"] = $shippingAddress->getStreet(1);
+            }
+
+            if (!empty($shippingAddress->getPostcode())) {
+                $requestDelivery["postalCode"] = $shippingAddress->getPostcode();
+            }
+
+            if (!empty($shippingAddress->getCity())) {
+                $requestDelivery["city"] = $shippingAddress->getCity();
+            }
+
+            if (!empty($shippingAddress->getRegionCode())) {
+                $requestDelivery["stateOrProvince"] = $shippingAddress->getRegionCode();
+            }
+
+            if (!empty($shippingAddress->getCountryId())) {
+                $requestDelivery["country"] = $shippingAddress->getCountryId();
+            }
+
+            // If nothing is changed which means delivery address is not filled
+            if ($requestDelivery !== $requestDeliveryDefaults) {
+                $request['deliveryAddress'] = $requestDelivery;
+            }
+        }
+        return $request;
+    }
+
+    /**
      * Get all the stored Credit Cards and other billing agreements stored with Adyen.
      *
      * @param string $shopperReference
