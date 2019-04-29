@@ -89,7 +89,7 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
         $incrementId = $order->getIncrementId();
         $realOrderId = $order->getRealOrderId();
         $customerId = Mage::helper('adyen/payment')->getShopperReference($order->getCustomerId(), $realOrderId);
-        $merchantAccount = Mage::helper('adyen')->getAdyenMerchantAccount($this->_paymentMethod, $storeId);
+        $merchantAccount = Mage::helper('adyen')->getAdyenMerchantAccount($paymentMethod, $storeId);
         $customerEmail = $order->getCustomerEmail();
         $billingAddress = $order->getBillingAddress();
         $deliveryAddress = $order->getShippingAddress();
@@ -292,14 +292,7 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
      */
     public function authorise3DPayment($payment)
     {
-        // retrieve configurations
-        if (Mage::app()->getStore()->isAdmin()) {
-            $storeId = $payment->getOrder()->getStoreId();
-        } else {
-            $storeId = null;
-        }
-
-        $apiKey = $this->_helper()->getConfigDataApiKey($storeId);
+        $apiKey = $this->_helper()->getConfigDataApiKey(null);
         if ($this->_helper()->getConfigDataDemoMode()) {
             $requestUrl = "https://checkout-test.adyen.com/v41/payments/details";
         } else {
@@ -353,7 +346,7 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
 
 
             if (!empty($billingAddress->getStreet(1))) {
-                $requestBilling["street"] = $shippingAddress->getStreet(1);
+                $requestBilling["street"] = $billingAddress->getStreet(1);
             }
 
             if (!empty($billingAddress->getPostcode())) {
@@ -393,7 +386,7 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
 
 
             if (!empty($shippingAddress->getStreet(1))) {
-                $requestBilling["street"] = $shippingAddress->getStreet(1);
+                $requestDelivery["street"] = $shippingAddress->getStreet(1);
             }
 
             if (!empty($shippingAddress->getPostcode())) {
