@@ -512,19 +512,6 @@ abstract class Adyen_Payment_Model_Adyen_Abstract extends Mage_Payment_Model_Met
         $pspReference = $response->paymentResult->pspReference;
 
         switch ($request) {
-            case "authorise":
-            case "authorise3d":
-                if ($response->paymentResult->fraudResult) {
-                    $fraudResult = $response->paymentResult->fraudResult->accountScore;
-                    $payment->setAdyenTotalFraudScore($fraudResult);
-                }
-                $responseCode = $response->paymentResult->resultCode;
-
-
-                // save pspreference to match with notification
-                $payment->setAdyenPspReference($pspReference);
-
-                break;
             case "refund":
                 $responseCode = $response->refundResult->response;
                 $pspReference = $response->refundResult->pspReference;
@@ -548,53 +535,13 @@ abstract class Adyen_Payment_Model_Adyen_Abstract extends Mage_Payment_Model_Met
         }
 
         switch ($responseCode) {
-            case "RedirectShopper":
-
-
-                $paRequest = $response->paymentResult->paRequest;
-                $md = $response->paymentResult->md;
-                $issuerUrl = $response->paymentResult->issuerUrl;
-
-                if (!empty($paRequest) && !empty($md) && !empty($issuerUrl)) {
-                    $payment->setAdditionalInformation('paRequest', $response->paymentResult->paRequest);
-                    $payment->setAdditionalInformation('md', $response->paymentResult->md);
-                    $payment->setAdditionalInformation('issuerUrl', $response->paymentResult->issuerUrl);
-                } else {
-                    // log exception
-                    $errorMsg = Mage::helper('adyen')->__('3D secure is not valid');
-                    Adyen_Payment_Exception::throwException($errorMsg);
-                }
-
-                Mage::getSingleton('customer/session')->setRedirectUrl("adyen/process/validate3d");
-                $this->_addStatusHistory($payment, $responseCode, $pspReference, $this->_getConfigData('order_status'));
-                break;
             case "Cancelled":
             case "Refused":
-
-                if ($response->paymentResult->refusalReason) {
-                    $refusalReason = $response->paymentResult->refusalReason;
-                    switch ($refusalReason) {
-                        case "Transaction Not Permitted":
-                            $errorMsg = Mage::helper('adyen')->__('The transaction is not permitted.');
-                            break;
-                        case "CVC Declined":
-                            $errorMsg = Mage::helper('adyen')->__('Declined due to the Card Security Code(CVC) being incorrect. Please check your CVC code!');
-                            break;
-                        case "Restricted Card":
-                            $errorMsg = Mage::helper('adyen')->__('The card is restricted.');
-                            break;
-                        case "803 PaymentDetail not found":
-                            $errorMsg = Mage::helper('adyen')->__('The payment is REFUSED because the saved card is removed. Please try an other payment method.');
-                            break;
-                        default:
-                            $errorMsg = Mage::helper('adyen')->__('The payment is REFUSED.');
-                            break;
-                    }
-                } else {
-                    $errorMsg = Mage::helper('adyen')->__('The payment is REFUSED.');
-                }
-
-                $errorMsg = new Varien_Object(array('error_message' => $errorMsg));
+                $errorMsg = new Varien_Object(
+                    array(
+                        'error_message' => Mage::helper('adyen')->__('The payment is REFUSED.')
+                    )
+                );
                 Mage::dispatchEvent(
                     'adyen_payment_authorize_refused_error',
                     array('responseResult' => $response->paymentResult, 'error' => $errorMsg)
@@ -606,46 +553,6 @@ abstract class Adyen_Payment_Model_Adyen_Abstract extends Mage_Payment_Model_Met
                 break;
             case "Authorised":
                 $this->_addStatusHistory($payment, $responseCode, $pspReference, $this->_getConfigData('order_status'));
-                break;
-            case "Received": // boleto payment
-                $pdfUrl = null;
-                $additionalDataResults = $response->paymentResult->additionalData->entry;
-                foreach ($additionalDataResults as $additionalDataResult) {
-                    if ($additionalDataResult->key == "boletobancario.url") {
-                        $pdfUrl = $additionalDataResult->value;
-                    }
-
-                    // multibanco
-                    if (preg_match('/comprafacil/', $additionalDataResult->key)) {
-                        $payment->setAdditionalInformation($additionalDataResult->key, $additionalDataResult->value);
-                    }
-
-                    // multibanco
-                    if ($additionalDataResult->key == 'comprafacil.deadline') {
-                        /** @var Mage_Sales_Model_Order $salesOrder */
-                        $salesOrder = $payment->getOrder();
-
-                        $deadlineDate = 'comprafacil.deadline_date';
-
-                        if ($additionalDataResult->value > 0) {
-                            $zendDate = new Zend_Date($salesOrder->getCreatedAtStoreDate());
-
-                            $zendDate->addDay($additionalDataResult->value);
-
-                            $payment->setAdditionalInformation(
-                                $deadlineDate,
-                                Mage::helper('core')->formatDate($zendDate)
-                            );
-                        } else {
-                            $payment->setAdditionalInformation(
-                                $deadlineDate,
-                                Mage::helper('core')->formatDate($salesOrder->getCreatedAtStoreDate())
-                            );
-                        }
-                    }
-                }
-
-                $this->_addStatusHistory($payment, $responseCode, $pspReference, false, $pdfUrl);
                 break;
             case '[capture-received]':
             case '[refund-received]':
