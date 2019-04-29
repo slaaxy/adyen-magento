@@ -99,7 +99,7 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
         } else {
             $requestUrl = self::ENDPOINT_PROTOCOL .
                 $this->_helper()->getConfigData("live_endpoint_url_prefix") .
-                self::CHECKOUT_ENDPOINT_LIVE_SUFFIX . "/v42/payments";
+                self::CHECKOUT_ENDPOINT_LIVE_SUFFIX . "/v41/payments";
         }
 
         $apiKey = $this->_helper()->getConfigDataApiKey($storeId);
@@ -303,7 +303,7 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
         if ($this->_helper()->getConfigDataDemoMode()) {
             $requestUrl = "https://checkout-test.adyen.com/v41/payments/details";
         } else {
-            $requestUrl = self::ENDPOINT_PROTOCOL . $this->_helper()->getConfigData("live_endpoint_url_prefix") . self::CHECKOUT_ENDPOINT_LIVE_SUFFIX . "/v42/payments/details";
+            $requestUrl = self::ENDPOINT_PROTOCOL . $this->_helper()->getConfigData("live_endpoint_url_prefix") . self::CHECKOUT_ENDPOINT_LIVE_SUFFIX . "/v41/payments/details";
         }
 
 
