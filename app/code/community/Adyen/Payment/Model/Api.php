@@ -122,6 +122,9 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
         $request['shopperEmail'] = $customerEmail;
         $request['shopperIP'] = $order->getRemoteIp();
         $request['shopperReference'] = !empty($customerId) ? $customerId : self::GUEST_ID . $realOrderId;
+        if (Mage::getStoreConfigFlag('payment/adyen_cc/enable_threeds2', $storeId)) {
+            $request = $this->setThreeds2Data($request, $payment);
+        }
         $request['applicationInfo'] = array(new Adyen_Payment_Model_Adyen_Data_ApplicationInfo());
 
         $request = $this->buildAddressData($request, $billingAddress, $deliveryAddress);
@@ -130,6 +133,22 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
         $request = $this->setPaymentSpecificData($request, $paymentMethod, $payment);
         $response = $this->doRequestJson($request, $requestUrl, $apiKey, $storeId);
         return json_decode($response, true);
+    }
+
+    public function setThreeds2Data($request, $payment )
+    {
+        $session = Mage::helper('adyen')->getSession();
+        $info = $payment->getMethodInstance();
+        $request['additionalData']['allow3DS2'] = "true";
+        $request['browserInfo']['language'] = $session->getData('language_' . $info->getCode());
+        $request['browserInfo']['colorDepth'] = $session->getData('color_depth_' . $info->getCode());
+        $request['browserInfo']['screenHeight'] = $session->getData('screen_height_' . $info->getCode());
+        $request['browserInfo']['screenWidth'] = $session->getData('screen_width_' . $info->getCode());
+        $request['browserInfo']['timeZoneOffset'] = $session->getData('time_zone_offset_' . $info->getCode());
+        $request['browserInfo']['javaEnabled'] = $session->getData('java_enabled_' . $info->getCode());
+        $request['channel'] = 'web';
+        $request['origin'] = $this->getOrigin();
+        return $request;
     }
 
     /**
@@ -613,6 +632,12 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
         return $originKey;
     }
 
+    public function getOrigin(){
+        $originUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
+        $parsed = parse_url($originUrl);
+        $origin = $parsed['scheme'] . "://" . $parsed['host'];
+        return $origin;
+    }
 
     /**
      * Do the actual API request

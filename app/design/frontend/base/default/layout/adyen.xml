@@ -85,6 +85,9 @@
             <action method="addCss">
                 <stylesheet>css/adyencheckout.css</stylesheet>
             </action>
+            <action method="addJs">
+                <script>adyen/payment/threeds2-js-utils.js</script>
+            </action>
         </reference>
         <reference name="after_body_start">
             <block type="core/template" name="after_body_start_script" template="adyen/after_body_start.phtml"/>
