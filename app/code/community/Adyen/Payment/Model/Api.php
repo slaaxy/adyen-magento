@@ -757,6 +757,8 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
             );
         }
 
+        Mage::log($result, null, 'adyen_api.log');
+
         return $result;
     }
 
