@@ -604,9 +604,7 @@ abstract class Adyen_Payment_Model_Adyen_Abstract extends Mage_Payment_Model_Met
         $payment->setAdyenPspReference($pspReference);
 
         switch ($responseCode) {
-            case
-            "RedirectShopper":
-
+            case 'RedirectShopper':
                 $paRequest = $response['redirect']['data']['PaReq'];
                 $md = $response['redirect']['data']['MD'];
                 $issuerUrl = $response['redirect']['url'];
@@ -626,8 +624,8 @@ abstract class Adyen_Payment_Model_Adyen_Abstract extends Mage_Payment_Model_Met
                 Mage::getSingleton('customer/session')->setRedirectUrl("adyen/process/validate3d");
                 $this->_addStatusHistory($payment, $responseCode, $pspReference, $this->_getConfigData('order_status'));
                 break;
-            case "Cancelled":
-            case "Refused":
+            case 'Cancelled':
+            case 'Refused':
                 $errorMsg = new Varien_Object(array('error_message' => Mage::helper('adyen')->__('The payment is REFUSED.')));
                 Mage::dispatchEvent(
                     'adyen_payment_authorize_refused_error',
@@ -638,11 +636,11 @@ abstract class Adyen_Payment_Model_Adyen_Abstract extends Mage_Payment_Model_Met
                 $this->resetReservedOrderId();
                 Adyen_Payment_Exception::throwException($errorMsg);
                 break;
-            case "Authorised":
+            case 'Authorised':
                 $this->_addStatusHistory($payment, $responseCode, $pspReference, $this->_getConfigData('order_status'));
                 break;
-            case "Received":
-            case "PresentToShopper": // boleto payment
+            case 'Received':
+            case 'PresentToShopper': // boleto payment
                 $pdfUrl = null;
 
                 if (!empty($response['outputDetails']['boletobancario.url'])) {
@@ -683,7 +681,7 @@ abstract class Adyen_Payment_Model_Adyen_Abstract extends Mage_Payment_Model_Met
 
                 $this->_addStatusHistory($payment, $responseCode, $pspReference, false, $pdfUrl);
                 break;
-            case "Error":
+            case 'Error':
                 $this->resetReservedOrderId();
                 $errorMsg = Mage::helper('adyen')->__('System error, please try again later');
                 Adyen_Payment_Exception::throwException($errorMsg);
