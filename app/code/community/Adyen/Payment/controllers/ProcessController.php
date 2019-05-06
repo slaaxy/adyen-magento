@@ -220,7 +220,6 @@ class Adyen_Payment_ProcessController extends Mage_Core_Controller_Front_Action
                             // only cancel if 3D secure was not already successful
                             if (!$order->getPayment()->getAdditionalInformation('3d_successful')) {
                                 $order->addStatusHistoryComment(Mage::helper('adyen')->__('3D-secure validation was unsuccessful.'))->save();
-                                $session->addException($e, Mage::helper('adyen')->__($e->getMessage()));
                                 $this->cancel();
                             } else {
                                 // already succesfull so turn back to the success page
