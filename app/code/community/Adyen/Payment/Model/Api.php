@@ -174,19 +174,19 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
             $request['enableOneClick'] = true;
 
             // if save card is disabled only shoot in as recurring if recurringType is set to ONECLICK,RECURRING
-            if ($payment->getAdditionalInformation("store_cc") == "" &&
-                $recurringType === "ONECLICK,RECURRING"
+            if ($payment->getAdditionalInformation('store_cc') == '' &&
+                $recurringType === 'ONECLICK,RECURRING'
             ) {
                 $request['enableRecurring'] = true;
-            } elseif ($payment->getAdditionalInformation("store_cc") == "1") {
-                if ($recurringType == "ONECLICK" || $recurringType == "ONECLICK,RECURRING") {
+            } elseif ($payment->getAdditionalInformation('store_cc') == '1') {
+                if ($recurringType == 'ONECLICK' || $recurringType == 'ONECLICK,RECURRING') {
                     $request['paymentMethod']['storeDetails'] = true;
                 }
 
-                if ($recurringType == "ONECLICK,RECURRING" || $recurringType == "RECURRING") {
+                if ($recurringType == 'ONECLICK,RECURRING' || $recurringType == 'RECURRING') {
                     $request['enableRecurring'] = true;
                 }
-            } elseif ($recurringType == "RECURRING") {
+            } elseif ($recurringType == 'RECURRING') {
                 $request['enableRecurring'] = true;
             }
         }
@@ -659,7 +659,9 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
         $username = $this->_helper()->getConfigDataWsUserName($storeId);
         $password = $this->_helper()->getConfigDataWsPassword($storeId);
 
-        Mage::log($request, null, 'adyen_api.log');
+        $logRequest = $request;
+        $logRequest['additionalData'] = '';
+        Mage::log($logRequest, null, 'adyen_api.log');
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $requestUrl);
@@ -779,6 +781,8 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
                 )
             );
         }
+
+        Mage::log($result, null, 'adyen_api.log');
 
         return $result;
     }
