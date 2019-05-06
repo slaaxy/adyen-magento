@@ -108,7 +108,7 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
 
         $request['browserInfo'] = array(
             'userAgent' => $_SERVER['HTTP_USER_AGENT'],
-            'acceptHeader' => $_SERVER['HTTP_ACCEPT'],
+            'acceptHeader' => $_SERVER['HTTP_ACCEPT']
         );
         $request['merchantAccount'] = $merchantAccount;
         $request['returnUrl'] = Mage::getUrl('adyen/process/success');
