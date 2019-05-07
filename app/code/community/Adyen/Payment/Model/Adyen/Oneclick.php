@@ -111,6 +111,11 @@ class Adyen_Payment_Model_Adyen_Oneclick extends Adyen_Payment_Model_Adyen_Cc
         $session->setData('encrypted_cvc_' . $method, $encryptedCvc);
         $session->setData('encrypted_expiry_month_' . $method, $encryptedMonth);
         $session->setData('encrypted_expiry_year_' . $method, $encryptedYear);
+        $session->setData('screen_width_' . $method,  $data->getScreenWidth());
+        $session->setData('color_depth_' . $method,  $data->getColorDepth());
+        $session->setData('time_zone_offset_' . $method,  $data->getTimeZoneOffset());
+        $session->setData('language_' . $method,  $data->getLanguage());
+        $session->setData('java_enabled_' . $method, $data->getJavaEnabled());
 
 
         if (Mage::helper('adyen/installments')->isInstallmentsEnabled()) {

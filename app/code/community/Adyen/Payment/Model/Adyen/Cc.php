@@ -71,6 +71,13 @@ class Adyen_Payment_Model_Adyen_Cc extends Adyen_Payment_Model_Adyen_Abstract im
             $session->setData('encrypted_number_' . $method, $data->getEncryptedNumber());
             $session->setData('encrypted_expiry_month_' . $method, $data->getEncryptedExpiryMonth());
             $session->setData('encrypted_expiry_year_' . $method, $data->getEncryptedExpiryYear());
+            $session->setData('screen_height_' . $method, $data-> getScreenHeight());
+            $session->setData('screen_width_' . $method,  $data->getScreenWidth());
+            $session->setData('color_depth_' . $method,  $data->getColorDepth());
+            $session->setData('time_zone_offset_' . $method,  $data->getTimeZoneOffset());
+            $session->setData('language_' . $method,  $data->getLanguage());
+            $session->setData('java_enabled_' . $method, $data->getJavaEnabled());
+
             if (!empty($data->getEncryptedCvc())) {
                 $session->setData('encrypted_cvc_' . $method, $data->getEncryptedCvc());
             }

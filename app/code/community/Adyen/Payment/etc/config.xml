@@ -441,6 +441,7 @@
                 <wsdl>https://pal-test.adyen.com/pal/Payment.wsdl</wsdl>
                 <allow_billing_agreement_wizard>0</allow_billing_agreement_wizard>
                 <sort_order>20</sort_order>
+                <enable_threeds2>0</enable_threeds2>
             </adyen_cc>
             <adyen_oneclick translate="title" module="adyen">
                 <active>0</active>

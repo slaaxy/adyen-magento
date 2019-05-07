@@ -681,6 +681,12 @@ abstract class Adyen_Payment_Model_Adyen_Abstract extends Mage_Payment_Model_Met
 
                 $this->_addStatusHistory($payment, $responseCode, $pspReference, false, $pdfUrl);
                 break;
+            case "IdentifyShopper":
+                //todo implement result code handling
+                break;
+            case "ChallengeShopper":
+                //todo implement result code handling
+                  break;
             case 'Error':
                 $this->resetReservedOrderId();
                 $errorMsg = Mage::helper('adyen')->__('System error, please try again later');
