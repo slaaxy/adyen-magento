@@ -132,7 +132,7 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
         return json_decode($response, true);
     }
 
-    public function setThreeds2Data($request, $payment )
+    public function setThreeds2Data($request, $payment)
     {
         $session = Mage::helper('adyen')->getSession();
         $info = $payment->getMethodInstance();
@@ -146,6 +146,47 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
         $request['channel'] = 'web';
         $request['origin'] = $this->getOrigin();
         return $request;
+    }
+
+    /**
+     * Create a payment details request for 3DS 2.0
+     *
+     * @param $payload
+     * @param $payment
+     * @param $storeId
+     * @return mixed
+     * @throws Adyen_Payment_Exception
+     */
+    public function authoriseThreeDS2Payment($payload, $payment, $storeId)
+    {
+        $apiKey = $this->_helper()->getConfigDataApiKey($storeId);
+        if ($this->_helper()->getConfigDataDemoMode()) {
+            $requestUrl = "https://checkout-test.adyen.com/v41/payments/details";
+        } else {
+            $requestUrl = self::ENDPOINT_PROTOCOL . $this->_helper()->getConfigData("live_endpoint_url_prefix") . self::CHECKOUT_ENDPOINT_LIVE_SUFFIX . "/v41/payments/details";
+        }
+
+        $request = array();
+
+        if ($paymentData = $payment->getAdditionalInformation('paymentData')) {
+            // Add payment data into the request object
+            $request['paymentData'] = $payment->getAdditionalInformation('paymentData');
+
+            // unset payment data from additional information
+            $payment->unsAdditionalInformation('paymentData');
+        } else {
+            Adyen_Payment_Exception::throwException('3D secure 2.0 failed, payment data not found');
+        }
+
+        // Depends on the component's response we send a fingerprint or the challenge result
+        if (!empty($payload['details']['threeds2.fingerprint'])) {
+            $request['details']['threeds2.fingerprint'] = $payload['details']['threeds2.fingerprint'];
+        } elseif (!empty($payload['details']['threeds2.challengeResult'])) {
+            $request['details']['threeds2.challengeResult'] = $payload['details']['threeds2.challengeResult'];
+        }
+
+        $response = $this->doRequestJson($request, $requestUrl, $apiKey, $storeId);
+        return json_decode($response, true);
     }
 
     /**
@@ -629,7 +670,8 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
         return $originKey;
     }
 
-    public function getOrigin(){
+    public function getOrigin()
+    {
         $originUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
         $parsed = parse_url($originUrl);
         $origin = $parsed['scheme'] . "://" . $parsed['host'];
