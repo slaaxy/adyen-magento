@@ -33,6 +33,7 @@
 
     <default>
         <block type="adyen/ApplePay" name="adyen.applepay.express.checkout" template="adyen/apple_pay.phtml"/>
+        <block type="adyen/threeds2" name="adyen.threeds2" template="adyen/threeds2.phtml"/>
     </default>
 
     <checkout_onepage_review>
