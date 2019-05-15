@@ -1,0 +1,100 @@
+<div id="threeDS2">
+    threeds2 in process...
+    Please do not refresh or leave the page
+    <script type="text/javascript"
+            src="<?php echo Mage::helper('adyen')->getCheckoutCardComponentJs(); ?>"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript">
+        var type = "<?php echo $this->getThreeds2Type();?>";
+        var token = "<?php echo $this->getThreeds2Token();?>";
+        var configuration = {
+            locale: '<?php echo Mage::app()->getLocale()->getLocaleCode();?>'
+        };
+
+        var checkout = new AdyenCheckout(configuration);
+
+        renderThreeDS2Component(type, token);
+
+        /**
+         * Rendering the 3DS2.0 components
+         * To do the device fingerprint at the response of IdentifyShopper render the threeDS2DeviceFingerprint
+         * component
+         * To render the challenge for the customer at the response of ChallengeShopper render the
+         * threeDS2Challenge component
+         * Both of them is going to be rendered in a Magento dialog popup
+         *
+         * @param type
+         * @param token
+         */
+        function renderThreeDS2Component(type, token) {
+            var self = this;
+            var threeDS2Node = document.getElementById('threeDS2');
+
+            if (type == "IdentifyShopper") {
+                self.threeDS2Component = checkout
+                    .create('threeDS2DeviceFingerprint', {
+                        fingerprintToken: token,
+                        onComplete: function (result) {
+                            console.log(result);
+                            processThreeDS2(result.data);
+                        },
+                        onError: function () {
+                            //todo verify error
+                            processThreeDS2(null, "error on IdentifyShopper");
+                        }
+                    });
+            } else if (type == "ChallengeShopper") {
+                self.threeDS2Component = checkout
+                    .create('threeDS2Challenge', {
+                        challengeToken: token,
+                        onComplete: function (result) {
+                            processThreeDS2(result.data);
+                        },
+                        onError: function () {
+                            //todo verify error
+                            processThreeDS2(null, "error on ChallengeShopper");
+                        }
+                    });
+            }
+            self.threeDS2Component.mount(threeDS2Node);
+        }
+
+        /**
+         * The results that the 3DS2 components returns in the onComplete callback needs to be sent to the
+         * backend to the /adyen/threeDS2Process endpoint and based on the response render a new threeDS2
+         * component or place the order (validateThreeDS2OrPlaceOrder)
+         * @param response
+         */
+        function processThreeDS2(data, error) {
+
+            var url = '<?php echo $this->getUrl('adyen/ThreeDS2Process', array('_secure' => true)); ?>';
+
+            var promise = new Promise(function (resolve, reject) {
+                var ajaxReq = new $.ajax(url, {
+                    parameters: {isAjax: 1, method: 'POST'},
+                    success: function (result) {
+                        resolve(result);
+                    },
+                    failure: function (result) {
+                        reject(Error("There was an error with 3ds2"));
+                    },
+                    data: {details: data["details"], error: error}
+                });
+            });
+
+            promise.then(function res(result) {
+                var response = JSON.parse(result);
+                if (response.authentication) {
+                    renderThreeDS2Component(response["resultCode"], response["authentication"]["threeds2.challengeToken"]);
+                } else if (response === "Authorised") {
+                    window.location = "/checkout/onepage/success";
+                } else if(response === "Refused" || response === "Error") {
+                    window.location = "/checkout/cart";
+                }
+                    });
+        }
+
+    </script>
+
+
+</div>

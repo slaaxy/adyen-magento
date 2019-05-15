@@ -171,12 +171,12 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
 
         $request = array();
 
-        if ($paymentData = $payment->getAdditionalInformation('paymentData')) {
+        if ($paymentData = $payment->getAdditionalInformation('threeDS2PaymentData')) {
             // Add payment data into the request object
-            $request['paymentData'] = $payment->getAdditionalInformation('paymentData');
+            $request['paymentData'] = $payment->getAdditionalInformation('threeDS2PaymentData');
 
             // unset payment data from additional information
-            $payment->unsAdditionalInformation('paymentData');
+            $payment->unsAdditionalInformation('threeDS2PaymentData');
         } else {
             Adyen_Payment_Exception::throwException('3D secure 2.0 failed, payment data not found');
         }
