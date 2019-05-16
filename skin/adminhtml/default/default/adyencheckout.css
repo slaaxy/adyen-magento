@@ -626,56 +626,6 @@
     font-size: .81em
 }
 
-.adyen-checkout__phone-input {
-    display: flex
-}
-
-.adyen-checkout__phone-input__prefix {
-    margin-right: .5em
-}
-
-.adyen-checkout__phone-input .adyen-checkout__field {
-    margin-bottom: 0
-}
-
-.adyen-checkout__iban-input__number {
-    padding: 5px 36px 5px 8px;
-    text-transform: uppercase
-}
-
-.adyen-checkout__threeds2__challenge-container {
-    background-color: transparent;
-    box-sizing: border-box;
-    display: block;
-    overflow: auto;
-    width: 100%
-}
-
-.adyen-checkout__threeds2__challenge-container--01 {
-    height: 400px;
-    width: 250px
-}
-
-.adyen-checkout__threeds2__challenge-container--02 {
-    height: 400px;
-    width: 390px
-}
-
-.adyen-checkout__threeds2__challenge-container--03 {
-    height: 600px;
-    width: 500px
-}
-
-.adyen-checkout__threeds2__challenge-container--04 {
-    height: 400px;
-    width: 600px
-}
-
-.adyen-checkout__threeds2_challenge-container--05 {
-    height: 100%;
-    width: 100%
-}
-
 .adyen-checkout__button {
     background: #00112c;
     border: 0;
@@ -722,6 +672,71 @@
     align-items: center;
     display: flex;
     justify-content: center
+}
+
+.adyen-checkout__phone-input {
+    display: flex
+}
+
+.adyen-checkout__phone-input__prefix {
+    margin-right: .5em
+}
+
+.adyen-checkout__phone-input .adyen-checkout__field {
+    margin-bottom: 0
+}
+
+.adyen-checkout__iban-input__number {
+    padding: 5px 36px 5px 8px;
+    text-transform: uppercase
+}
+
+.adyen-checkout__threeds2__challenge, .adyen-checkout__threeds2__challenge-container {
+    background-color: transparent;
+    box-sizing: border-box;
+    display: block;
+    overflow: auto;
+    width: 100%
+}
+
+.adyen-checkout__threeds2__challenge-container--01 {
+    height: 400px;
+    width: 250px
+}
+
+.adyen-checkout__threeds2__challenge-container--02 {
+    height: 400px;
+    width: 390px
+}
+
+.adyen-checkout__threeds2__challenge-container--03 {
+    height: 600px;
+    width: 500px
+}
+
+.adyen-checkout__threeds2__challenge-container--04 {
+    height: 400px;
+    width: 600px
+}
+
+.adyen-checkout__threeds2_challenge-container--05 {
+    height: 100%;
+    width: 100%
+}
+
+.adyen-checkout__threeds2__challenge.adyen-checkout__threeds2__challenge--05 {
+    overflow: hidden;
+    padding-top: 56.25%;
+    position: relative
+}
+
+.adyen-checkout__threeds2__challenge.adyen-checkout__threeds2__challenge--05 .adyen-checkout__iframe--threeDSIframe {
+    border: 0;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%
 }
 
 .adyen-checkout__qr-loader {
@@ -1113,28 +1128,24 @@
     transform: translateY(-50%) scale(1)
 }
 
-.adyen-checkout__alert {
-    align-items: flex-start;
-    background-color: #06f;
+.adyen-checkout__status {
+    align-items: center;
+    background-color: #fff;
+    border: 1px solid #d4d9db;
     border-radius: 6px;
-    color: #fff;
+    color: #001b2b;
     display: flex;
-    justify-content: space-between;
-    line-height: 1;
+    flex-direction: column;
+    font-size: 16px;
+    height: 350px;
+    justify-content: center;
     margin: 0;
-    padding: 12px
+    padding: 32px;
+    text-align: center
 }
 
-.adyen-checkout__alert--error {
-    background-color: #d10244
-}
-
-.adyen-checkout__alert--success {
-    background-color: #0abf53
-}
-
-.adyen-checkout__alert--info {
-    background-color: #06f
+.adyen-checkout__status__icon {
+    margin-bottom: 24px
 }
 
 .adyen-checkout__dropin, .adyen-checkout__dropin *, .adyen-checkout__dropin :after, .adyen-checkout__dropin :before {
