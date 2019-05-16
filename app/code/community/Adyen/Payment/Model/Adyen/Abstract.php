@@ -690,7 +690,6 @@ abstract class Adyen_Payment_Model_Adyen_Abstract extends Mage_Payment_Model_Met
                     $payment->setAdditionalInformation('threeDS2PaymentData', $response['paymentData']);
                 }
                 Mage::getSingleton('customer/session')->setRedirectUrl("adyen/process/validate3ds2");
-//                $this->_addStatusHistory($payment, $responseCode, $pspReference, $this->_getConfigData('order_status'));
                 break;
             case 'ChallengeShopper':
                 //todo implement result code handling
