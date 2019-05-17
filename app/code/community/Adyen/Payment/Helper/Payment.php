@@ -54,7 +54,8 @@ class Adyen_Payment_Helper_Payment extends Adyen_Payment_Helper_Data
             return "{$baseUrl}pay.shtml";
         }
 
-        if (!empty($brandCode) && (Mage::helper('adyen')->isOpenInvoice($brandCode) || $brandCode == "cofinoga_3xcb" || $brandCode == "cofinoga_4xcb")) {
+        if (!empty($brandCode) && (Mage::helper('adyen')->isOpenInvoice($brandCode) || $brandCode == "cofinoga_3xcb" || $brandCode == "cofinoga_4xcb" || strpos($brandCode,
+                    'facilypay_') !== false)) {
             return "{$baseUrl}skipDetails.shtml";
         }
 
@@ -739,9 +740,11 @@ class Adyen_Payment_Helper_Payment extends Adyen_Payment_Helper_Data
                 $openInvoiceData['openinvoicedata.' . $linename . '.vatCategory'] = "None";
             }
 
-            // Needed for RatePay
+            // Needed for RatePay and Oney
             if ($item->getSku() != "") {
                 $openInvoiceData['openinvoicedata.' . $linename . '.itemId'] = $item->getSku();
+            } elseif ($item->getId() != "") {
+                $openInvoiceData['openinvoicedata.' . $linename . '.itemId'] = $item->getId();
             }
         }
 
