@@ -245,7 +245,7 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
                     $request['paymentMethod']['encryptedCardNumber'] = $encryptedNumber;
                 }
 
-                if (!empty($encryptedExpiryMonth) && !empty($encryptedExpiryYear != "")) {
+                if (!empty($encryptedExpiryMonth) && !empty($encryptedExpiryYear)) {
                     $request['paymentMethod']['encryptedExpiryMonth'] = $encryptedExpiryMonth;
                     $request['paymentMethod']['encryptedExpiryYear'] = $encryptedExpiryYear;
                 }
