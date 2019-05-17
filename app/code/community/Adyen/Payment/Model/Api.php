@@ -38,6 +38,7 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
     const CHECKOUT_ENDPOINT_LIVE_SUFFIX = "-checkout-live.adyenpayments.com/checkout";
     const ENDPOINT_CONNECTED_TERMINALS_TEST = "https://terminal-api-test.adyen.com/connectedTerminals";
     const ENDPOINT_CONNECTED_TERMINALS_LIVE = "https://terminal-api-live.adyen.com/connectedTerminals";
+    const ENDPOINT_CHECKOUT_TEST = "https://checkout-test.adyen.com/checkout";
 
     protected $_recurringTypes = array(
         self::RECURRING_TYPE_ONECLICK,
@@ -95,7 +96,7 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
         $deliveryAddress = $order->getShippingAddress();
 
         if ($this->_helper()->getConfigDataDemoMode()) {
-            $requestUrl = "https://checkout-test.adyen.com/v41/payments";
+            $requestUrl = self::ENDPOINT_CHECKOUT_TEST . "/v41/payments";
         } else {
             $requestUrl = self::ENDPOINT_PROTOCOL .
                 $this->_helper()->getConfigData("live_endpoint_url_prefix") .
@@ -294,7 +295,7 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
     {
         $apiKey = $this->_helper()->getConfigDataApiKey(null);
         if ($this->_helper()->getConfigDataDemoMode()) {
-            $requestUrl = "https://checkout-test.adyen.com/v41/payments/details";
+            $requestUrl = self::ENDPOINT_CHECKOUT_TEST . "/v41/payments/details";
         } else {
             $requestUrl = self::ENDPOINT_PROTOCOL . $this->_helper()->getConfigData("live_endpoint_url_prefix") . self::CHECKOUT_ENDPOINT_LIVE_SUFFIX . "/v41/payments/details";
         }
