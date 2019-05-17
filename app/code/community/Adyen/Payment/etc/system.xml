@@ -86,7 +86,7 @@
                             <fields>
                                 <merchantAccount translate="label comment tooltip">
                                     <label>Merchant Account</label>
-§                                    <tooltip>
+                                    <tooltip>
                                         <![CDATA[The merchant account identifier you want to process the (transaction) request with. Find this at the top of the screen in the Adyen Customer Area, where you will see [YourCompanyAccount] > [YourMerchantAccount] . Please note that the merchant account is different from the company account; a company account can have one or more merchant accounts.]]></tooltip>
                                     <comment>
                                         <![CDATA[<a target="_blank" href="https://docs.adyen.com/display/TD/Prepare+the+settings+in+the+Adyen+Customer+Area">Click here for explanation.</a>]]></comment>
@@ -1759,7 +1759,8 @@
                         </api_key_test>
                         <api_key_live translate="label">
                             <label>API key for Terminal API LIVE</label>
-                            <frontend_type>text</frontend_type>
+                            <frontend_type>obscure</frontend_type>
+                            <backend_model>adminhtml/system_config_backend_encrypted</backend_model>
                             <sort_order>45</sort_order>
                             <tooltip>Copy this from the Live Adyen Customer Area => Settings => Users => System => [web
                                 service user]=> Checkout API Key.
