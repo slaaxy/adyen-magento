@@ -158,18 +158,18 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
 
             // if save card is disabled only shoot in as recurring if recurringType is set to ONECLICK,RECURRING
             if ($payment->getAdditionalInformation('store_cc') == '' &&
-                $recurringType === 'ONECLICK,RECURRING'
+                $recurringType === self::RECURRING_TYPE_ONECLICK_RECURRING
             ) {
                 $request['enableRecurring'] = true;
             } elseif ($payment->getAdditionalInformation('store_cc') == '1') {
-                if ($recurringType == 'ONECLICK' || $recurringType == 'ONECLICK,RECURRING') {
+                if ($recurringType == self::RECURRING_TYPE_ONECLICK || $recurringType == self::RECURRING_TYPE_ONECLICK_RECURRING) {
                     $request['paymentMethod']['storeDetails'] = true;
                 }
 
-                if ($recurringType == 'ONECLICK,RECURRING' || $recurringType == 'RECURRING') {
+                if ($recurringType == self::RECURRING_TYPE_ONECLICK_RECURRING || $recurringType == self::RECURRING_TYPE_RECURRING) {
                     $request['enableRecurring'] = true;
                 }
-            } elseif ($recurringType == 'RECURRING') {
+            } elseif ($recurringType == self::RECURRING_TYPE_RECURRING) {
                 $request['enableRecurring'] = true;
             }
         }
