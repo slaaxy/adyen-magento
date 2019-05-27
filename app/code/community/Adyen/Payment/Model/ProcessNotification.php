@@ -1595,7 +1595,7 @@ class Adyen_Payment_Model_ProcessNotification extends Mage_Core_Model_Abstract
     protected function _addNotificationToQueue($params)
     {
         $pspReference = $params->getData('pspReference');
-        if (is_numeric($pspReference)) {
+        if (!$this->isTestNotification($pspReference)) {
             $this->_debugData['AddNotificationToQueue Step1'] = 'Going to add notification to queue';
 
             $incrementId = $params->getData('merchantReference');
@@ -1751,5 +1751,22 @@ class Adyen_Payment_Model_ProcessNotification extends Mage_Core_Model_Abstract
     protected function _getRequest()
     {
         return Mage::app()->getRequest();
+    }
+
+    /**
+     * If notification is a test notification from Adyen Customer Area
+     *
+     * @param $pspReference
+     * @return bool
+     */
+    protected function isTestNotification($pspReference)
+    {
+        if (strpos(strtolower($pspReference), "test_") !== false
+            || strpos(strtolower($pspReference), "testnotification_") !== false
+        ) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
