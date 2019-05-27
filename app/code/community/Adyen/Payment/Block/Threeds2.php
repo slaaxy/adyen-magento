@@ -41,7 +41,7 @@ class Adyen_Payment_Block_Threeds2 extends Mage_Core_Block_Template
             return $this->getOrder();
         } else {
             // log the exception
-            Mage::log("Redirect exception could not load the order:", null, "adyen_api.log");
+            Mage::log("Could not load the order:", null, "adyen_api.log");
             return null;
         }
     }
