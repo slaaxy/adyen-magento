@@ -111,7 +111,7 @@ $originKey = $this->getOriginKey();
                      * creates the card component,
                      * sets up the callbacks for card components
                      */
-                    function renderSecureCVC() {
+                    function renderSecureCVC<?php echo $_code ?>() {
                         var locale = "<?php echo Mage::app()->getLocale()->getLocaleCode();?>";
                         var variant = "<?php echo $_recurringDetails["variant"]?>";
                         var oneClickCardNode = document.getElementById('oneclick-div-<?php echo $_code ?>');
@@ -174,14 +174,14 @@ $originKey = $this->getOriginKey();
                             .mount(oneClickCardNode);
                     }
 
-                    function getBrowserData() {
+                    function getBrowserData<?php echo $_code ?>() {
                         var browserInfo = ThreedDS2Utils.getBrowserInfo();
-                        document.getElementById('screenWidth').value = browserInfo['screenWidth'];
-                        document.getElementById('screenHeight').value = browserInfo['screenHeight'];
-                        document.getElementById('colorDepth').value = browserInfo['colorDepth'];
-                        document.getElementById('timeZoneOffset').value =browserInfo['timeZoneOffset'];
-                        document.getElementById('language').value =browserInfo['language'];
-                        document.getElementById('javaEnabled').value =browserInfo['javaEnabled'];
+                        document.getElementById('screenWidth<?php echo $_code ?>').value = browserInfo['screenWidth'];
+                        document.getElementById('screenHeight<?php echo $_code ?>').value = browserInfo['screenHeight'];
+                        document.getElementById('colorDepth<?php echo $_code ?>').value = browserInfo['colorDepth'];
+                        document.getElementById('timeZoneOffset<?php echo $_code ?>').value =browserInfo['timeZoneOffset'];
+                        document.getElementById('language<?php echo $_code ?>').value =browserInfo['language'];
+                        document.getElementById('javaEnabled<?php echo $_code ?>').value =browserInfo['javaEnabled'];
                     }
 
                     var secf = document.createElement("script");
@@ -190,8 +190,8 @@ $originKey = $this->getOriginKey();
                     secf.type = "text/javascript";
                     secf.onload = function () {
                         polyFill();
-                        renderSecureCVC();
-                        getBrowserData();
+                        renderSecureCVC<?php echo $_code ?>();
+                        getBrowserData<?php echo $_code ?>();
                     };
                     document.body.appendChild(secf);
                 </script>
@@ -238,12 +238,12 @@ $originKey = $this->getOriginKey();
             <?php endif; ?>
         </li>
         <div>
-            <input type="hidden" name="payment[screen_width]" id="screenWidth" value="">
-            <input type="hidden" name="payment[screen_height]" id="screenHeight" value="">
-            <input type="hidden" name="payment[color_depth]" id="colorDepth" value="">
-            <input type="hidden" name="payment[time_zone_offset]" id="timeZoneOffset" value="">
-            <input type="hidden" name="payment[language]" id="language" value="">
-            <input type="hidden" name="payment[java_enabled]" id="javaEnabled" value="">
+            <input type="hidden" name="payment[screen_width]" id="screenWidth<?php echo $_code ?>" value="">
+            <input type="hidden" name="payment[screen_height]" id="screenHeight<?php echo $_code ?>" value="">
+            <input type="hidden" name="payment[color_depth]" id="colorDepth<?php echo $_code ?>" value="">
+            <input type="hidden" name="payment[time_zone_offset]" id="timeZoneOffset<?php echo $_code ?>" value="">
+            <input type="hidden" name="payment[language]" id="language<?php echo $_code ?>" value="">
+            <input type="hidden" name="payment[java_enabled]" id="javaEnabled<?php echo $_code ?>" value="">
         </div>
     </ul>
 </fieldset>
