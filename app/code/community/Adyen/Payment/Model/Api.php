@@ -122,7 +122,7 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
         $request['shopperEmail'] = $customerEmail;
         $request['shopperIP'] = $order->getRemoteIp();
         $request['shopperReference'] = !empty($customerId) ? $customerId : self::GUEST_ID . $realOrderId;
-
+        $request['applicationInfo'] = array(new Adyen_Payment_Model_Adyen_Data_ApplicationInfo());
 
         $request = $this->buildAddressData($request, $billingAddress, $deliveryAddress);
         $request = $this->setRecurringMode($request, $paymentMethod, $payment, $storeId);
