@@ -119,7 +119,10 @@ $originKey = $this->getOriginKey();
                         var checkout = new AdyenCheckout({
                             locale: locale,
                             originKey: "<?php echo $originKey;?>",
-                            loadingContext: "<?php echo Mage::helper('adyen')->getCheckoutContextUrl();?>"
+                            loadingContext: "<?php echo Mage::helper('adyen')->getCheckoutContextUrl();?>",
+                            risk: {
+                                enabled: false
+                            }
                         });
                         var hideCVC = false;
                         if ("<?php echo $this->showCvc();?>") {

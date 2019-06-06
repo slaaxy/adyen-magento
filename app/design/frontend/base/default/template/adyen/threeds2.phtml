@@ -37,8 +37,7 @@
                             processThreeDS2(result.data);
                         },
                         onError: function () {
-                            //todo verify error
-                            processThreeDS2(null, "error on IdentifyShopper");
+                            console.log("error on IdentifyShopper");
                         }
                     });
             } else if (type == "ChallengeShopper") {
@@ -49,8 +48,7 @@
                             processThreeDS2(result.data);
                         },
                         onError: function () {
-                            //todo verify error
-                            processThreeDS2(null, "error on ChallengeShopper");
+                            console.log("error on ChallengeShopper");
                         }
                     });
             }
@@ -66,7 +64,6 @@
         function processThreeDS2(data, error) {
 
             var url = '<?php echo $this->getUrl('adyen/ThreeDS2Process', array('_secure' => true)); ?>';
-
             var promise = new Promise(function (resolve, reject) {
                 var ajaxReq = new $.ajax(url, {
                     parameters: {isAjax: 1, method: 'POST'},
@@ -74,19 +71,23 @@
                         resolve(result);
                     },
                     failure: function (result) {
-                        reject(Error("There was an error with 3ds2"));
+                        reject(new Error("There was an error with 3ds2"));
                     },
-                    data: {details: data["details"], error: error}
+                    data: {details: data, error: error}
                 });
             });
 
             promise.then(function res(result) {
-                var response = JSON.parse(result);
-                if (response.authentication) {
-                    renderThreeDS2Component(response["resultCode"], response["authentication"]["threeds2.challengeToken"]);
-                } else if (response === "Authorised") {
-                    window.location = "/checkout/onepage/success";
-                } else if (response === "Refused" || response === "Error") {
+                if (result) {
+                    var response = JSON.parse(result);
+                    if (response.authentication) {
+                        renderThreeDS2Component(response["resultCode"], response["authentication"]["threeds2.challengeToken"]);
+                    } else if (response === "Authorised") {
+                        window.location = "/checkout/onepage/success";
+                    } else if (response === "Refused" || response === "Error") {
+                        window.location = "/checkout/cart";
+                    }
+                } else {
                     window.location = "/checkout/cart";
                 }
             });
