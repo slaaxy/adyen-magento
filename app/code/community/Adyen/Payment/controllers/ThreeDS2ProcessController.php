@@ -38,6 +38,7 @@ class Adyen_Payment_ThreeDS2ProcessController extends Mage_Core_Controller_Front
     public function indexAction()
     {
         $payload = $this->getRequest()->getParams();
+        $payloadDetails = $payload['details'];
 
         // get current order
         $session = Mage::getSingleton('checkout/session');
@@ -46,7 +47,15 @@ class Adyen_Payment_ThreeDS2ProcessController extends Mage_Core_Controller_Front
 
         // get payment details
         $payment = $order->getPayment();
-        $result = Mage::getSingleton('adyen/api')->authoriseThreeDS2Payment($payload, $payment, $storeId);
+
+        try {
+            $result = Mage::getSingleton('adyen/api')->authoriseThreeDS2Payment($payloadDetails, $payment, $storeId);
+        } catch (Exception $e){
+            Mage::logException($e);
+            $this->cancelThreeds2();
+            $this->getResponse()->setBody(json_encode("Error"));
+            return;
+        }
 
         //If the result is ChallengeShopper, send the full response to the threeds2 page
         if (!empty($result["resultCode"]) && strcmp("ChallengeShopper", $result["resultCode"]) === 0) {
