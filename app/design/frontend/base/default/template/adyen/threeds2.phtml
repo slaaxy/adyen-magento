@@ -61,7 +61,7 @@
          * or redirect to cart and cancel the order
          * @param response
          */
-        function processThreeDS2(data, error) {
+        function processThreeDS2(data) {
 
             var url = '<?php echo $this->getUrl('adyen/ThreeDS2Process', array('_secure' => true)); ?>';
             var promise = new Promise(function (resolve, reject) {
@@ -73,7 +73,7 @@
                     failure: function (result) {
                         reject(new Error("There was an error with 3ds2"));
                     },
-                    data: {details: data, error: error}
+                    data: {details: data}
                 });
             });
 
