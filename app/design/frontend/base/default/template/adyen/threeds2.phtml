@@ -36,8 +36,8 @@
                         onComplete: function (result) {
                             processThreeDS2(result.data);
                         },
-                        onError: function () {
-                            console.log("error on IdentifyShopper");
+                        onError: function (error) {
+                            console.log(JSON.stringify(error));
                         }
                     });
             } else if (type == "ChallengeShopper") {
@@ -47,8 +47,8 @@
                         onComplete: function (result) {
                             processThreeDS2(result.data);
                         },
-                        onError: function () {
-                            console.log("error on ChallengeShopper");
+                        onError: function (error) {
+                            console.log(JSON.stringify(error));
                         }
                     });
             }
