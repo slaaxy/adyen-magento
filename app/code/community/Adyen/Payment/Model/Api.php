@@ -122,7 +122,7 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
         $request['shopperEmail'] = $customerEmail;
         $request['shopperIP'] = $order->getRemoteIp();
         $request['shopperReference'] = !empty($customerId) ? $customerId : self::GUEST_ID . $realOrderId;
-        if (Mage::getStoreConfigFlag('payment/adyen_cc/enable_threeds2', $storeId)) {
+        if (!Mage::app()->getStore()->isAdmin() && Mage::getStoreConfigFlag('payment/adyen_cc/enable_threeds2', $storeId)) {
             $request = $this->setThreeds2Data($request, $payment);
         }
         $request['applicationInfo'] = array(new Adyen_Payment_Model_Adyen_Data_ApplicationInfo());
