@@ -682,7 +682,6 @@ abstract class Adyen_Payment_Model_Adyen_Abstract extends Mage_Payment_Model_Met
                 $this->_addStatusHistory($payment, $responseCode, $pspReference, false, $pdfUrl);
                 break;
             case 'IdentifyShopper':
-                //todo implement result code handling
                 if (!empty($response['resultCode']) && !empty($response['authentication']['threeds2.fingerprintToken']) && !empty($response['paymentData'])){
                     $payment->setAdditionalInformation('threeDS2Type', $response['resultCode']);
                     $payment->setAdditionalInformation('threeDS2Token',
@@ -692,7 +691,6 @@ abstract class Adyen_Payment_Model_Adyen_Abstract extends Mage_Payment_Model_Met
                 Mage::getSingleton('customer/session')->setRedirectUrl("adyen/process/validate3ds2");
                 break;
             case 'ChallengeShopper':
-                //todo implement result code handling
                 if (!empty($response['resultCode']) && !empty($response['authentication']['threeds2.challengeToken']) && !empty($response['paymentData'])){
                     $payment->setAdditionalInformation('threeDS2Type', $response['resultCode']);
                     $payment->setAdditionalInformation('threeDS2Token',

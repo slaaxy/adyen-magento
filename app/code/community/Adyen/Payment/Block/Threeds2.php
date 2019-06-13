@@ -30,7 +30,7 @@ class Adyen_Payment_Block_Threeds2 extends Mage_Core_Block_Template
         parent::__construct();
     }
 
-    protected function _getCheckout()
+    protected function getCheckout()
     {
         return Mage::getSingleton('checkout/session');
     }

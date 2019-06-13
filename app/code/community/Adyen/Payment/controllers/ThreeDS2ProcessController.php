@@ -87,7 +87,7 @@ class Adyen_Payment_ThreeDS2ProcessController extends Mage_Core_Controller_Front
      */
     public function cancelThreeds2()
     {
-        $session = $this->_getCheckout();
+        $session = $this->getCheckout();
 
         // clear session for email shopper
         $session->setAdyenEmailShopper("");
@@ -120,7 +120,7 @@ class Adyen_Payment_ThreeDS2ProcessController extends Mage_Core_Controller_Front
         $session->replaceQuote($quote);
 
         // if setting failed_attempt_disable is on and the payment method is openinvoice ignore this payment mehthod the second time
-        if ($this->_getConfigData(
+        if ($this->getConfigData(
                 'failed_attempt_disable',
                 'adyen_openinvoice'
             ) && $order->getPayment()->getMethod() == "adyen_openinvoice") {
@@ -132,7 +132,7 @@ class Adyen_Payment_ThreeDS2ProcessController extends Mage_Core_Controller_Front
         }
 
         //handle the old order here
-        $orderStatus = $this->_getConfigData('payment_cancelled', 'adyen_abstract', $order->getStoreId());
+        $orderStatus = $this->getConfigData('payment_cancelled', 'adyen_abstract', $order->getStoreId());
 
         try {
             $order->setActionFlag($orderStatus, true);
@@ -162,11 +162,11 @@ class Adyen_Payment_ThreeDS2ProcessController extends Mage_Core_Controller_Front
         }
     }
 
-    protected function _getCheckout()
+    protected function getCheckout()
     {
         return Mage::getSingleton('checkout/session');
     }
-    protected function _getConfigData($code, $paymentMethodCode = null, $storeId = null)
+    protected function getConfigData($code, $paymentMethodCode = null, $storeId = null)
     {
         return Mage::helper('adyen')->_getConfigData($code, $paymentMethodCode, $storeId);
     }
