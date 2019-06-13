@@ -122,12 +122,72 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
         $request['shopperEmail'] = $customerEmail;
         $request['shopperIP'] = $order->getRemoteIp();
         $request['shopperReference'] = !empty($customerId) ? $customerId : self::GUEST_ID . $realOrderId;
+        if (!Mage::app()->getStore()->isAdmin() && Mage::getStoreConfigFlag('payment/adyen_cc/enable_threeds2', $storeId)) {
+            $request = $this->setThreeds2Data($request, $payment);
+        }
         $request['applicationInfo'] = array(new Adyen_Payment_Model_Adyen_Data_ApplicationInfo());
 
         $request = $this->buildAddressData($request, $billingAddress, $deliveryAddress);
         $request = $this->setRecurringMode($request, $paymentMethod, $payment, $storeId);
         $request = $this->setShopperInteraction($request, $paymentMethod, $payment, $storeId);
         $request = $this->setPaymentSpecificData($request, $paymentMethod, $payment);
+        $response = $this->doRequestJson($request, $requestUrl, $apiKey, $storeId);
+        return json_decode($response, true);
+    }
+
+    public function setThreeds2Data($request, $payment)
+    {
+        $session = Mage::helper('adyen')->getSession();
+        $info = $payment->getMethodInstance();
+        $request['additionalData']['allow3DS2'] = "true";
+        $request['browserInfo']['language'] = $session->getData('language_' . $info->getCode());
+        $request['browserInfo']['colorDepth'] = $session->getData('color_depth_' . $info->getCode());
+        $request['browserInfo']['screenHeight'] = $session->getData('screen_height_' . $info->getCode());
+        $request['browserInfo']['screenWidth'] = $session->getData('screen_width_' . $info->getCode());
+        $request['browserInfo']['timeZoneOffset'] = $session->getData('time_zone_offset_' . $info->getCode());
+        $request['browserInfo']['javaEnabled'] = $session->getData('java_enabled_' . $info->getCode());
+        $request['channel'] = 'web';
+        $request['origin'] = $this->getOrigin();
+        return $request;
+    }
+
+    /**
+     * Create a payment details request for 3DS 2.0
+     *
+     * @param $payload
+     * @param $payment
+     * @param $storeId
+     * @return mixed
+     * @throws Adyen_Payment_Exception
+     */
+    public function authoriseThreeDS2Payment($payload, $payment, $storeId)
+    {
+        $apiKey = $this->_helper()->getConfigDataApiKey($storeId);
+        if ($this->_helper()->getConfigDataDemoMode()) {
+            $requestUrl = "https://checkout-test.adyen.com/v41/payments/details";
+        } else {
+            $requestUrl = self::ENDPOINT_PROTOCOL . $this->_helper()->getConfigData("live_endpoint_url_prefix") . self::CHECKOUT_ENDPOINT_LIVE_SUFFIX . "/v41/payments/details";
+        }
+
+        $request = array();
+
+        if ($paymentData = $payment->getAdditionalInformation('threeDS2PaymentData')) {
+            // Add payment data into the request object
+            $request['paymentData'] = $payment->getAdditionalInformation('threeDS2PaymentData');
+
+            // unset payment data from additional information
+            $payment->unsAdditionalInformation('threeDS2PaymentData');
+        } else {
+            Adyen_Payment_Exception::throwException('3D secure 2.0 failed, payment data not found');
+        }
+
+        // Depends on the component's response we send a fingerprint or the challenge result
+        if (!empty($payload['details']['threeds2.fingerprint'])) {
+            $request['details']['threeds2.fingerprint'] = $payload['details']['threeds2.fingerprint'];
+        } elseif (!empty($payload['details']['threeds2.challengeResult'])) {
+            $request['details']['threeds2.challengeResult'] = $payload['details']['threeds2.challengeResult'];
+        }
+
         $response = $this->doRequestJson($request, $requestUrl, $apiKey, $storeId);
         return json_decode($response, true);
     }
@@ -613,6 +673,13 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
         return $originKey;
     }
 
+    public function getOrigin()
+    {
+        $originUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
+        $parsed = parse_url($originUrl);
+        $origin = $parsed['scheme'] . "://" . $parsed['host'];
+        return $origin;
+    }
 
     /**
      * Do the actual API request

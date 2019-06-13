@@ -89,6 +89,15 @@ $originKey = $this->getOriginKey();
             });
         }
 
+        function getBrowserData() {
+            var browserInfo = ThreedDS2Utils.getBrowserInfo();
+            document.getElementById('screenWidth').value = browserInfo['screenWidth'];
+            document.getElementById('screenHeight').value = browserInfo['screenHeight'];
+            document.getElementById('colorDepth').value = browserInfo['colorDepth'];
+            document.getElementById('timeZoneOffset').value =browserInfo['timeZoneOffset'];
+            document.getElementById('language').value =browserInfo['language'];
+            document.getElementById('javaEnabled').value =browserInfo['javaEnabled'];
+        }
 
         function renderSecureFields() {
             var locale = "<?php echo Mage::app()->getLocale()->getLocaleCode();?>";
@@ -100,7 +109,10 @@ $originKey = $this->getOriginKey();
             var checkout = new AdyenCheckout({
                 locale: locale,
                 originKey: "<?php echo $originKey;?>",
-                loadingContext: "<?php echo Mage::helper('adyen')->getCheckoutContextUrl();?>"
+                loadingContext: "<?php echo Mage::helper('adyen')->getCheckoutContextUrl();?>",
+                risk: {
+                    enabled: false
+                }
             });
             var card = checkout.create('card', {
                 type: 'card',
@@ -188,6 +200,7 @@ $originKey = $this->getOriginKey();
         secf.onload = function () {
             polyFill();
             renderSecureFields();
+            getBrowserData();
         };
         document.body.appendChild(secf);
 
@@ -207,6 +220,12 @@ $originKey = $this->getOriginKey();
                 <input type="hidden" name="payment[encrypted_cvc]" id="encryptedSecurityCode"
                        value="">
                 <input type="hidden" class="required-entry" name="allValidcard" id="allValidcard" value="">
+                <input type="hidden" name="payment[screen_width]" id="screenWidth" value="">
+                <input type="hidden" name="payment[screen_height]" id="screenHeight" value="">
+                <input type="hidden" name="payment[color_depth]" id="colorDepth" value="">
+                <input type="hidden" name="payment[time_zone_offset]" id="timeZoneOffset" value="">
+                <input type="hidden" name="payment[language]" id="language" value="">
+                <input type="hidden" name="payment[java_enabled]" id="javaEnabled" value="">
             </div>
         </div>
     </li>
