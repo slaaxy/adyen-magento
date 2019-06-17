@@ -140,7 +140,7 @@ $originKey = $this->getOriginKey();
         var checkout = new AdyenCheckout({
             locale: locale,
             originKey: "<?php echo $originKey;?>",
-            loadingContext: "<?php echo Mage::helper('adyen')->getCheckoutContextUrl();?>"
+            environment: "<?php echo Mage::helper('adyen')->getCheckoutEnvironment();?>"
         });
         var card = checkout.create('card', {
             type: 'card',
@@ -151,12 +151,12 @@ $originKey = $this->getOriginKey();
 
             onChange: function (state, component) {
                 if (state.isValid && !component.state.errors.encryptedSecurityCode) {
-                    document.getElementById('holderName').value = state.data.holderName;
-                    document.getElementById('encryptedCardNumber').value = state.data.encryptedCardNumber;
-                    document.getElementById('encryptedExpiryMonth').value = state.data.encryptedExpiryMonth;
-                    document.getElementById('encryptedExpiryYear').value = state.data.encryptedExpiryYear;
-                    if (state.data.encryptedSecurityCode) {
-                        document.getElementById('encryptedSecurityCode').value = state.data.encryptedSecurityCode;
+                    document.getElementById('holderName').value = state.data.paymentMethod.holderName;
+                    document.getElementById('encryptedCardNumber').value = state.data.paymentMethod.encryptedCardNumber;
+                    document.getElementById('encryptedExpiryMonth').value = state.data.paymentMethod.encryptedExpiryMonth;
+                    document.getElementById('encryptedExpiryYear').value = state.data.paymentMethod.encryptedExpiryYear;
+                    if (state.data.paymentMethod.encryptedSecurityCode) {
+                        document.getElementById('encryptedSecurityCode').value = state.data.paymentMethod.encryptedSecurityCode;
                     }
                     document.getElementById("allValidcard").value = true;
                 } else {
