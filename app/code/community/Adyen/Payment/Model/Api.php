@@ -338,6 +338,7 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
                 Mage::throwException(Mage::helper('adyen')->__('Missing token'));
             }
 
+            $request['paymentMethod']['type'] = 'applepay';
             $request['paymentMethod']['applepay.token'] = base64_encode($token);
         }
 
