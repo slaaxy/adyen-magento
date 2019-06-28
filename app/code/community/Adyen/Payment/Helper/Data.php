@@ -34,7 +34,9 @@ class Adyen_Payment_Helper_Data extends Mage_Payment_Helper_Data
     const AFTERPAY = "afterpay";
     const CHECKOUT_CONTEXT_URL_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/';
     const CHECKOUT_CONTEXT_URL_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/';
-    const CHECKOUT_COMPONENT_JS = 'sdk/2.1.0/adyen.js';
+    const CHECKOUT_COMPONENT_JS = 'sdk/3.0.0/adyen.js';
+    const CHECKOUT_ENVIRONMENT_TEST = 'test';
+    const CHECKOUT_ENVIRONMENT_LIVE = 'live';
 
     /**
      * @return array
@@ -687,5 +689,22 @@ class Adyen_Payment_Helper_Data extends Mage_Payment_Helper_Data
     public function getCheckoutCardComponentJs($storeId = null)
     {
         return $this->getCheckoutContextUrl($storeId) . self::CHECKOUT_COMPONENT_JS;
+    }
+
+    /**
+     * @param int|null $storeId
+     * @return string
+     */
+    public function getCheckoutEnvironment($storeId = null)
+    {
+        if (null === $storeId) {
+            $storeId = Mage::app()->getStore()->getStoreId();
+        }
+
+        if ($this->getConfigDataDemoMode($storeId)) {
+            return self::CHECKOUT_ENVIRONMENT_TEST;
+        }
+
+        return self::CHECKOUT_ENVIRONMENT_LIVE;
     }
 }

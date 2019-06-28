@@ -627,4 +627,26 @@ class Adyen_Payment_ProcessController extends Mage_Core_Controller_Front_Action
         }
     }
 
+    public function validate3ds2Action(){
+        $session = $this->_getCheckout();
+        $order = $this->_getOrder();
+        $order->loadByIncrementId($session->getLastRealOrderId());
+        $order->setState(
+            Mage_Sales_Model_Order::STATE_PENDING_PAYMENT, true,
+            Mage::helper('adyen')->__(
+                'Customer is performing 3DS 2.0 validation. Once the shopper authenticated, the order status will be updated accordingly. 
+                        <br />Make sure that your notifications are being processed! 
+                        <br />If the order is stuck on this status, the shopper abandoned the session. The payment can be seen as unsuccessful. 
+                        <br />The order can be automatically cancelled based on the OFFER_CLOSED notification. Please contact Adyen Support to enable this.'
+            )
+        )->save();
+
+        $this->getResponse()->setBody(
+            $this->getLayout()
+                ->createBlock('adyen/threeds2')
+                ->setOrder($order)
+                ->toHtml()
+        );
+    }
+
 }

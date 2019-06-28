@@ -111,7 +111,7 @@ $originKey = $this->getOriginKey();
                      * creates the card component,
                      * sets up the callbacks for card components
                      */
-                    function renderSecureCVC() {
+                    function renderSecureCVC<?php echo $_code ?>() {
                         var locale = "<?php echo Mage::app()->getLocale()->getLocaleCode();?>";
                         var variant = "<?php echo $_recurringDetails["variant"]?>";
                         var oneClickCardNode = document.getElementById('oneclick-div-<?php echo $_code ?>');
@@ -119,7 +119,10 @@ $originKey = $this->getOriginKey();
                         var checkout = new AdyenCheckout({
                             locale: locale,
                             originKey: "<?php echo $originKey;?>",
-                            loadingContext: "<?php echo Mage::helper('adyen')->getCheckoutContextUrl();?>"
+                            environment: "<?php echo Mage::helper('adyen')->getCheckoutEnvironment();?>",
+                            risk: {
+                                enabled: false
+                            }
                         });
                         var hideCVC = false;
                         if ("<?php echo $this->showCvc();?>") {
@@ -163,8 +166,8 @@ $originKey = $this->getOriginKey();
                                             document.getElementById('encryptedSecurityCode<?php echo $_code; ?>').classList.remove("required-entry");
                                         }
                                     }
-                                    if (state.isValid && state.data.encryptedSecurityCode) {
-                                        document.getElementById('encryptedSecurityCode<?php echo $_code; ?>').value = state.data.encryptedSecurityCode;
+                                    if (state.isValid && state.data.paymentMethod.encryptedSecurityCode) {
+                                        document.getElementById('encryptedSecurityCode<?php echo $_code; ?>').value = state.data.paymentMethod.encryptedSecurityCode;
                                     } else {
                                         document.getElementById('encryptedSecurityCode<?php echo $_code; ?>').value = '';
                                     }
@@ -174,13 +177,24 @@ $originKey = $this->getOriginKey();
                             .mount(oneClickCardNode);
                     }
 
+                    function getBrowserData<?php echo $_code ?>() {
+                        var browserInfo = ThreedDS2Utils.getBrowserInfo();
+                        document.getElementById('screenWidth<?php echo $_code ?>').value = browserInfo['screenWidth'];
+                        document.getElementById('screenHeight<?php echo $_code ?>').value = browserInfo['screenHeight'];
+                        document.getElementById('colorDepth<?php echo $_code ?>').value = browserInfo['colorDepth'];
+                        document.getElementById('timeZoneOffset<?php echo $_code ?>').value =browserInfo['timeZoneOffset'];
+                        document.getElementById('language<?php echo $_code ?>').value =browserInfo['language'];
+                        document.getElementById('javaEnabled<?php echo $_code ?>').value =browserInfo['javaEnabled'];
+                    }
+
                     var secf = document.createElement("script");
                     <?php $adyenHelper = Mage::helper('adyen'); ?>
                     secf.src = "<?php echo $adyenHelper->getCheckoutCardComponentJs();?>";
                     secf.type = "text/javascript";
                     secf.onload = function () {
                         polyFill();
-                        renderSecureCVC();
+                        renderSecureCVC<?php echo $_code ?>();
+                        getBrowserData<?php echo $_code ?>();
                     };
                     document.body.appendChild(secf);
                 </script>
@@ -226,6 +240,14 @@ $originKey = $this->getOriginKey();
                 </div>
             <?php endif; ?>
         </li>
+        <div>
+            <input type="hidden" name="payment[screen_width]" id="screenWidth<?php echo $_code ?>" value="">
+            <input type="hidden" name="payment[screen_height]" id="screenHeight<?php echo $_code ?>" value="">
+            <input type="hidden" name="payment[color_depth]" id="colorDepth<?php echo $_code ?>" value="">
+            <input type="hidden" name="payment[time_zone_offset]" id="timeZoneOffset<?php echo $_code ?>" value="">
+            <input type="hidden" name="payment[language]" id="language<?php echo $_code ?>" value="">
+            <input type="hidden" name="payment[java_enabled]" id="javaEnabled<?php echo $_code ?>" value="">
+        </div>
     </ul>
 </fieldset>
 
