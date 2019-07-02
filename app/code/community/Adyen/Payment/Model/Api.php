@@ -125,8 +125,7 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
         if (!Mage::app()->getStore()->isAdmin() && Mage::getStoreConfigFlag('payment/adyen_cc/enable_threeds2', $storeId)) {
             $request = $this->setThreeds2Data($request, $payment);
         }
-        $request['applicationInfo'] = array(new Adyen_Payment_Model_Adyen_Data_ApplicationInfo());
-
+        $request = $this->setApplicationInfo($request);
         $request = $this->buildAddressData($request, $billingAddress, $deliveryAddress);
         $request = $this->setRecurringMode($request, $paymentMethod, $payment, $storeId);
         $request = $this->setShopperInteraction($request, $paymentMethod, $payment, $storeId);
@@ -877,5 +876,20 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
         }
         $response = $this->doRequestJson($request, $requestUrl, $apiKey, $storeId);
         return $response;
+    }
+
+    /**
+     * Set ApplicationInfo on /payments request
+     *
+     * @param $request
+     * @return mixed
+     */
+    public function setApplicationInfo($request)
+    {
+        $request['applicationInfo']['externalPlatform']['version'] = Mage::getVersion();
+        $request['applicationInfo']['externalPlatform']['name'] = "Magento";
+        $request['applicationInfo']['adyenPaymentSource']['version'] = Mage::helper('adyen')->getExtensionVersion();
+        $request['applicationInfo']['adyenPaymentSource']['name'] = "adyen-magento";
+        return $request;
     }
 }
