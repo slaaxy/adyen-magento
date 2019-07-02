@@ -1263,6 +1263,9 @@ class Adyen_Payment_Model_ProcessNotification extends Mage_Core_Model_Abstract
             case 'laser':
             case 'paypal':
             case 'sepadirectdebit':
+            case 'dankort':
+            case 'elo':
+            case 'hipercard':
                 $manualCaptureAllowed = true;
                 break;
             default:
