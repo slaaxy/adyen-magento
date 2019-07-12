@@ -8,6 +8,9 @@
         var type = "<?php echo $this->getThreeds2Type();?>";
         var token = "<?php echo $this->getThreeds2Token();?>";
         var configuration = {
+            risk: {
+                enabled: false
+            },
             locale: '<?php echo Mage::app()->getLocale()->getLocaleCode();?>'
         };
 
