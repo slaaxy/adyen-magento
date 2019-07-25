@@ -47,6 +47,7 @@
                 self.threeDS2Component = checkout
                     .create('threeDS2Challenge', {
                         challengeToken: token,
+                        size: '05',
                         onComplete: function (result) {
                             processThreeDS2(result.data);
                         },
