@@ -602,7 +602,7 @@ abstract class Adyen_Payment_Model_Adyen_Abstract extends Mage_Payment_Model_Met
         }
 
         $responseCode = $response['resultCode'];
-        $pspReference = $response['pspReference'];
+        $pspReference = !empty($response['pspReference']) ? $response['pspReference'] : null;
 
         // save pspreference to match with notification
         $payment->setAdyenPspReference($pspReference);
