@@ -364,7 +364,7 @@ class Adyen_Payment_Model_Api extends Mage_Core_Model_Abstract
             $requestUrl = self::ENDPOINT_PROTOCOL . $this->_helper()->getConfigData("live_endpoint_url_prefix") . self::CHECKOUT_ENDPOINT_LIVE_SUFFIX . "/v41/payments/details";
         }
 
-
+        $storeId = $payment->getOrder()->getStoreId();
         $paymentData = $payment->getAdditionalInformation('paymentData');
         $md = $payment->getAdditionalInformation('md');
         $paResponse = $payment->getAdditionalInformation('paResponse');
