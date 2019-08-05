@@ -2,11 +2,7 @@
 Use Adyen's plugin for Magento to offer frictionless payments online, in-app, and in-store.
 
 ## Magento 1 end of life (EOL)
-Magento has officially announced that Magento 1 will reach end of life (EOL) on June 1, 2020. No quality fixes or security patches will be deployed for Magento Commerce 1 or Magento Open Source 1 after this date.
-
-As a consequence, using Magento 1 after June 1, 2020 makes your business highly vulnerable to security breaches, and unable to comply with the Payment Card Industry Data Security Standards (PCI DSS).
-
-To prevent these significant risks to both your business and ours, Adyen will stop processing payments for all merchants using Magento 1 as of June 1, 2020.
+Magento has officially announced that Magento 1 will reach end of life (EOL) on June 1, 2020.
 
 [For more information visit our documentation page](https://docs.adyen.com/plugins/magento-1/magento-1-eol)
 
