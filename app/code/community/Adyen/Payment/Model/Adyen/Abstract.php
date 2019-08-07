@@ -1,22 +1,26 @@
 <?php
 
 /**
+ *                       ######
+ *                       ######
+ * ############    ####( ######  #####. ######  ############   ############
+ * #############  #####( ######  #####. ######  #############  #############
+ *        ######  #####( ######  #####. ######  #####  ######  #####  ######
+ * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
+ * ###### ######  #####( ######  #####. ######  #####          #####  ######
+ * #############  #############  #############  #############  #####  ######
+ *  ############   ############  #############   ############  #####  ######
+ *                                      ######
+ *                               #############
+ *                               ############
+ *
  * Adyen Payment Module
  *
- * NOTICE OF LICENSE
+ * Copyright (c) 2019 Adyen B.V.
+ * This file is open source and available under the MIT license.
+ * See the LICENSE file for more info.
  *
- * This source file is subject to the Open Software License (OSL 3.0)
- * that is bundled with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://opensource.org/licenses/osl-3.0.php
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
- *
- * @category    Adyen
- * @package    Adyen_Payment
- * @copyright    Copyright (c) 2011 Adyen (http://www.adyen.com)
- * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * Author: Adyen <magento@adyen.com>
  */
 
 /**
@@ -598,7 +602,7 @@ abstract class Adyen_Payment_Model_Adyen_Abstract extends Mage_Payment_Model_Met
         }
 
         $responseCode = $response['resultCode'];
-        $pspReference = $response['pspReference'];
+        $pspReference = !empty($response['pspReference']) ? $response['pspReference'] : null;
 
         // save pspreference to match with notification
         $payment->setAdyenPspReference($pspReference);

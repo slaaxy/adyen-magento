@@ -1,6 +1,11 @@
 # Adyen Payment plugin for Magento
 Use Adyen's plugin for Magento to offer frictionless payments online, in-app, and in-store.
 
+## Magento 1 end of life (EOL)
+Magento has officially announced that Magento 1 will reach end of life (EOL) on June 1, 2020.
+
+[For more information visit our documentation page](https://docs.adyen.com/plugins/magento-1/magento-1-eol)
+
 ## Integration
 The plugin integrates card component(Secured Fields) using Adyen Checkout for all card payments. Local/redirect payment methods are integrated with DirectoryLookup and HPP. For Point Of Sale (POS) payments we use Terminal API using Cloud-based communication. Boleto, MultiBanco and SEPA are a direct API integration into Adyen.
 
